@@ -56,8 +56,6 @@ func (s *Sensor) Gather(acc telegraf.Accumulator) error {
 		s.c = c
 	}
 
-	fmt.Printf("DEBUG -- server: %s, token: %s\n", s.Server, s.Token)
-
 	sensors, err := s.SensorList()
 	if err != nil {
 		return err
@@ -88,10 +86,29 @@ func (s *Sensor) ProcessResults(sensors *SensorList, acc telegraf.Accumulator) e
 			tags["equipmentType"] = siteName[5]
 			tags["cargo"] = siteName[6]
 			tags["sensor"] = siteName[7]
-			tags["sensorID"] = siteName[8]
 		} else {
 			tags["customer"] = sensor.SensorName
 		}
+
+		tags["sensorID"] = fmt.Sprintf("%d", sensor.SensorID)
+		tags["applicatoinID"] = fmt.Sprintf("%d", sensor.ApplicationID)
+		tags["csNetID"] = fmt.Sprintf("%d", sensor.CSNetID)
+		tags["powerSourceID"] = fmt.Sprintf("%d", sensor.PowerSourceID)
+		tags["status"] = fmt.Sprintf("%d", sensor.Status)
+		tags["canUpdate"] = fmt.Sprintf("%t", sensor.CanUpdate)
+		tags["monnitApplicationID"] = fmt.Sprintf("%d", sensor.MonnitApplicationID)
+		tags["reportInterval"] = fmt.Sprintf("%d", sensor.ReportInterval)
+		tags["activeStateInterval"] = fmt.Sprintf("%d", sensor.ActiveStateInterval)
+		tags["accountID"] = fmt.Sprintf("%d", sensor.AccountID)
+		tags["alertsActive"] = fmt.Sprintf("%t", sensor.AlertsActive)
+		tags["inactivityAlert"] = fmt.Sprintf("%d", sensor.InactivityAlert)
+		tags["minThreshold"] = fmt.Sprintf("%d", sensor.MinimumThreshold)
+		tags["maxThreshold"] = fmt.Sprintf("%d", sensor.MaximumThreshold)
+		tags["tag"] = sensor.Tag
+
+		fields["batteryLevel"] = sensor.BatteryLevel
+		fields["signalStrength"] = sensor.SignalStrength
+		fields["hysteresis"] = sensor.Hysteresis
 
 		if strings.Contains(sensor.CurrentReading, "kWh") {
 			amps := make(map[string]interface{})
@@ -130,7 +147,7 @@ func (s *Sensor) ProcessResults(sensors *SensorList, acc telegraf.Accumulator) e
 
 // SensorList ...
 func (s *Sensor) SensorList() (*SensorList, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/sensorlist/%s", s.Server, s.Token), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/sensorlistextended/%s", s.Server, s.Token), nil)
 	if err != nil {
 		return nil, err
 	}
